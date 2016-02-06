@@ -90,7 +90,15 @@ if (isset($update['inline_query'])) {
          updateUserState($user, json_encode(array('state' => 'sendWarrior')));
          sendMsg($user['id'], "Warrior name:", false);
       } else if ($update['text'] == '/help') {
-         sendMsg($user['id'], "Once you are registered you can submit warriors with /sendwarrior\nIf you want, you can /participate or /retreat for the following tournaments.\nWhen you participate, your fighter (choose with /choosewarrior ) will fight in the core of the next tournaments.\nTournaments happen from time to time, you will be notified of the results.\nThis bot is in *alpha*!\n(No tournaments scheduled)", false);
+         sendMsg($user['id'], 
+            "Once you are registered you can submit warriors with /sendwarrior\n".
+            "If you want, you can /participate or /retreat for the following tournaments.\n".
+            "When you participate, your fighter (choose with /choosewarrior ) will fight in the core of the next tournaments.\n".
+            "Tournaments happen from time to time, you will be notified of the results.\n".
+            "Full list of /commands here!\n".
+            "This bot is in *alpha*!\n".
+            "(No tournaments scheduled)",
+         false);
       } else if ($update['text'] == '/commands') {
          sendMsg($user['id'],
             "/register - Become a member to participate\n".
@@ -104,7 +112,7 @@ if (isset($update['inline_query'])) {
             "/deletewarrior - delete one of your warriors\n".
             "/cancel - cancels operation\n".
             "/commands - get a list of all available commands\n",
-            false);
+         false);
       } else if ($update['text'] == '/score') {
          sendMsg($user['id'], 'Your score is '.$user['score']);
       } else if ($update['text'] == '/participate') {
