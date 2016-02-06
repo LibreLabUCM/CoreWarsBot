@@ -30,20 +30,59 @@ $update = json_decode($_IN, true);
 
 if (isset($update['inline_query'])) {
    $inline_query = $update['inline_query'];
-   $ans = array(
+   if (false && !in_array($inline_query['from']['id'], $admins)) { // Remove the "false && " to set maintenance mode
+      $ans = array(
          'inline_query_id' => $inline_query['id'],
          'results' => json_encode(array(
             array(
                'type' => 'article',
                'id' => "1",
-               'title' => 'This is not working yet',
+               'title' => 'inline mode is in maintenance for this bot!',
                'message_text' => 'This is not working yet!!!'
             )
          ))
       );
+      $r = sendApiRequest('answerInlineQuery', $ans);
+      exit;
+   }
+   $user = getUserById($inline_query['from']['id']);
+   if ($user === false) {
+         $ans = array(
+         'inline_query_id' => $inline_query['id'],
+         'results' => json_encode(
+            array(
+               array(
+                  'type' => 'article',
+                  'id' => "1",
+                  'title' => 'I want to register!!!',
+                  'message_text' => "Clic [here](https://telegram.me/corewarsbot?start=register) to register",
+                  'parse_mode' => 'Markdown'
+               )
+            )
+         )
+      );
+      $r = sendApiRequest('answerInlineQuery', $ans);
+      exit();
+   }
+   
+   $warriors = array();
+   foreach(getAllWarriorsFromUserId($user['id'], $inline_query['query']) as $wi => $warrior) {
+      array_push($warriors, array(
+         'type' => 'article',
+         'id' => $warrior['id'],
+         'title' => $warrior['name'],
+         'message_text' => 'Warrior _'.$warrior['name'].'_  by @'.getUserById($warrior['user'])['username']."\n\n```".getWarriorCodeFromId($warrior['id']).'```',
+         'parse_mode' => 'Markdown'
+      ));
+   }
+   $ans = array(
+      'inline_query_id' => $inline_query['id'],
+      'results' => json_encode(
+         $warriors
+      )
+   );
    
    $r = sendApiRequest('answerInlineQuery', $ans);
-   //sendMsg($inline_query['from']['id'], "Search detected!: \n" . $r);
 } else if (isset($update['message'])) {
    $update = $update['message'];
    
@@ -57,8 +96,8 @@ if (isset($update['inline_query'])) {
       exit;
    }
    $user = getUserById($update['from']['id']);
-
-   if ($update['text'] == '/register') {
+   logToFile(json_encode($update));
+   if ($update['text'] == '/register' || $update['text'] == '/start register') {
       if ($user !== false) {
          sendMsg($user['id'], 'It seems you are alerady registered!', false);
       } else {
@@ -188,7 +227,7 @@ if (isset($update['inline_query'])) {
          if (is_numeric($warriorId)) {
             $warrior = getWarriorById($warriorId);
             if (($warrior !== false) && ($warrior['user'] == $user['id'])) {
-               sendMsg($user['id'], getWarriorCodeFromId($warrior['id']), false);
+               sendMsg($user['id'], '```'.getWarriorCodeFromId($warrior['id']).'```', false);
                updateUserState($user, json_encode(array('state' => 'none')));
                exit();
             }
@@ -301,7 +340,7 @@ function updateUserState($user, $state) {
 function updateUserParticipation($user, $participation) {
    global $db;
    $stmt = $db->prepare("UPDATE users SET participate=:participate WHERE id=:id");
-   $stmt->bindValue(':participate', $participation, PDO::PARAM_BOOL);
+   $stmt->bindValue(':participate', $participation, PDO::PARAM_INT);
    $stmt->bindValue(':id', $user['id'], PDO::PARAM_INT);
    $stmt->execute();
 }
@@ -348,10 +387,13 @@ function getWarriorById($warriorId) {
    return false;
 }
 
-function getAllWarriorsFromUserId($userId) {
+function getAllWarriorsFromUserId($userId, $filter = "") {
    global $db;
-   $stmt = $db->prepare("SELECT * FROM warriors WHERE user=?");
+   $filter = '%'.$filter.'%';
+   //$filter = '%';
+   $stmt = $db->prepare("SELECT * FROM warriors WHERE user=? AND name LIKE ?");
    $stmt->bindValue(1, $userId, PDO::PARAM_INT);
+   $stmt->bindValue(2, $filter, PDO::PARAM_STR);
    $stmt->execute();
    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -389,7 +431,7 @@ function addNewWarrior($user, $warriorName, $warriorCode) {
    $warriorId = $db->lastInsertId();
    
    $wFile = fopen('./warriors/'.$user['id'].'/'. $warriorId .'.red', 'w');
-   fwrite($wFile, ";redcode-94b\n;assert 1\n;name ".$warriorName."\n;author ".$user['username']."\n;strategy try to win\n;date 2016-Feb-05\n;version 1\n\n".$warriorCode);
+   fwrite($wFile, ";redcode-94b\n;assert 1\n;name ".$warriorName."\n;author ".$user['username']."\n;strategy try to win\n;date ".date('Y-M-d')."\n;version 1\n\n".$warriorCode);
    fclose($wFile);
    
    return $warriorId;
