@@ -47,13 +47,13 @@ if (isset($update['inline_query'])) {
 } else if (isset($update['message'])) {
    $update = $update['message'];
    
-   if (!in_array($update['from']['id'], $admins)) {
-      sendMsg($update['from']['id'], "This bot is being developed.... right now!\nStarting 15:22, 06/02/2016...\nI guess.... I'll be done by 18:00\nLet's see if I can XD", false);
+   if (false && !in_array($update['from']['id'], $admins)) { // Remove the "false && " to set maintenance mode
+      sendMsg($update['from']['id'], "Maintenance!", false);
       exit;
    }
 
    if (!isset($update['text'])) {
-      sendMsg('43804645', json_encode($update)); // Debug!
+      logToFile(json_encode($update)); // Debug!
       exit;
    }
    $user = getUserById($update['from']['id']);
@@ -213,6 +213,7 @@ if (isset($update['inline_query'])) {
             if (($warrior !== false) && ($warrior['user'] == $user['id'])) {
                if ($user['warrior'] == $warrior['id']) {
                   sendMsg($user['id'], "You can't delete your fighter! If you want to delete this warrior, choose a different fighter:\n /choosewarrior ", false);
+                  updateUserState($user, json_encode(array('state' => 'none')));
                } else {
                   $warriorName = $warrior['name'];
                   // DELETE WARRIOR HERE
