@@ -262,6 +262,14 @@ function getWarriorById($warriorId) {
    return false;
 }
 
+function getAllWarriorsFromUserId($userId) {
+   global $db;
+   $stmt = $db->prepare("SELECT * FROM warriors WHERE user=?");
+   $stmt->bindValue(1, $userId, PDO::PARAM_INT);
+   $stmt->execute();
+   return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 function executeSimulation($warrior1ID, $warrior2ID, $rounds = 1) {
    $warrior1 = getWarriorById($warrior1ID);
    $warrior2 = getWarriorById($warrior2ID);
