@@ -38,7 +38,9 @@ if (isset($update['inline_query'])) {
                'type' => 'article',
                'id' => "1",
                'title' => 'inline mode is in maintenance for this bot!',
-               'message_text' => 'This is not working yet!!!'
+               'message_text' => 'This is not working yet!!!',
+               'is_personal' => true,
+               'cache_time' => 0
             )
          ))
       );
@@ -56,7 +58,9 @@ if (isset($update['inline_query'])) {
                   'id' => "1",
                   'title' => 'I want to register!!!',
                   'message_text' => "Clic [here](https://telegram.me/corewarsbot?start=register) to register",
-                  'parse_mode' => 'Markdown'
+                  'parse_mode' => 'Markdown',
+                  'is_personal' => true,
+                  'cache_time' => 0
                )
             )
          )
@@ -72,7 +76,9 @@ if (isset($update['inline_query'])) {
          'id' => $warrior['id'],
          'title' => $warrior['name'],
          'message_text' => 'Warrior _'.$warrior['name'].'_  by @'.getUserById($warrior['user'])['username']."\n\n```".getWarriorCodeFromId($warrior['id']).'```',
-         'parse_mode' => 'Markdown'
+         'parse_mode' => 'Markdown',
+         'is_personal' => true,
+         'cache_time' => 0
       ));
    }
    $ans = array(
@@ -431,7 +437,7 @@ function addNewWarrior($user, $warriorName, $warriorCode) {
    $warriorId = $db->lastInsertId();
    
    $wFile = fopen('./warriors/'.$user['id'].'/'. $warriorId .'.red', 'w');
-   fwrite($wFile, ";redcode-94b\n;assert 1\n;name ".$warriorName."\n;author ".$user['username']."\n;strategy try to win\n;date ".date('Y-M-d')."\n;version 1\n\n".$warriorCode);
+   fwrite($wFile, ";redcode-94b\n;assert 1\n;name ".$warriorName."\n;author ".$user['username']."\n;strategy try to win\n;date ".date('Y-M-d')."\n;version 1\n\n".strtolower($warriorCode));
    fclose($wFile);
    
    return $warriorId;
