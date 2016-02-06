@@ -119,9 +119,15 @@ if (isset($update['inline_query'])) {
          sendMsg($user['id'], "Choose a warrior (select one from the list or input its id)", $warriorsAsKeyboard);
          updateUserState($user, json_encode(array('state' => 'getWarrior')));
       } else if ($update['text'] == '/choosewarrior') {
-         sendMsg($user['id'], "In progress... I haven't programmed this yet XD", false);
+         $warriorsAsKeyboard = getWarriorsFromUserAsKeyboard($user['id']);
+         array_push($warriorsAsKeyboard, array('/cancel'));
+         sendMsg($user['id'], "Choose a warrior (select one from the list or input its id)", $warriorsAsKeyboard);
+         updateUserState($user, json_encode(array('state' => 'chooseWarrior')));
       } else if ($update['text'] == '/deletewarrior') {
-         sendMsg($user['id'], "In progress... I haven't programmed this yet XD", false);
+         $warriorsAsKeyboard = getWarriorsFromUserAsKeyboard($user['id']);
+         array_push($warriorsAsKeyboard, array('/cancel'));
+         sendMsg($user['id'], "Choose a warrior (select one from the list or input its id)", $warriorsAsKeyboard);
+         updateUserState($user, json_encode(array('state' => 'deleteWarrior')));
       } else if (explode(" ", $update['text'])[0] == '/sim') {
          if (!in_array($update['from']['id'], $admins)) {
             sendMsg($update['from']['id'], "You are not the boss", array(array('I am not the boss', 'I am not the boss'),array('I am not the boss', 'I am not the boss')));
@@ -174,8 +180,45 @@ if (isset($update['inline_query'])) {
          if (is_numeric($warriorId)) {
             $warrior = getWarriorById($warriorId);
             if (($warrior !== false) && ($warrior['user'] == $user['id'])) {
-               sendMsg($user['id'], getWarriorCodeFromId($warriorId), false);
+               sendMsg($user['id'], getWarriorCodeFromId($warrior['id']), false);
                updateUserState($user, json_encode(array('state' => 'none')));
+               exit();
+            }
+         }
+         $warriorsAsKeyboard = getWarriorsFromUserAsKeyboard($user['id']);
+         array_push($warriorsAsKeyboard, array('/cancel'));
+         sendMsg($user['id'], "Choose a valid warrior", $warriorsAsKeyboard);
+      } else if ($userState['state'] == 'chooseWarrior') {
+         $warriorId = explode(" ", $update['text'])[0];
+         if (is_numeric($warriorId)) {
+            $warrior = getWarriorById($warriorId);
+            if (($warrior !== false) && ($warrior['user'] == $user['id'])) {
+               updateFighterWarrior($user, $warrior['id']);
+               if ($user['participate']) {
+                  sendMsg($user['id'], "Updated!\n_".$warrior['name']."_  will now be your fighter, and it will fight in the next tournaments!", false);
+               } else {
+                  sendMsg($user['id'], "Updated!\n_".$warrior['name']."_  will now be your fighter! However, as you are not participating, it will not fight in the next tournaments.\nParhaps you would like to /participate ?", false);
+               }
+               updateUserState($user, json_encode(array('state' => 'none')));
+               exit();
+            }
+         }
+         $warriorsAsKeyboard = getWarriorsFromUserAsKeyboard($user['id']);
+         array_push($warriorsAsKeyboard, array('/cancel'));
+         sendMsg($user['id'], "Choose a valid warrior", $warriorsAsKeyboard);
+      } else if ($userState['state'] == 'deleteWarrior') {
+         $warriorId = explode(" ", $update['text'])[0];
+         if (is_numeric($warriorId)) {
+            $warrior = getWarriorById($warriorId);
+            if (($warrior !== false) && ($warrior['user'] == $user['id'])) {
+               if ($user['warrior'] == $warrior['id']) {
+                  sendMsg($user['id'], "You can't delete your fighter! If you want to delete this warrior, choose a different fighter:\n /choosewarrior ", false);
+               } else {
+                  $warriorName = $warrior['name'];
+                  // DELETE WARRIOR HERE
+                  sendMsg($user['id'], '_'.$warriorName."_ has been exterminated.\n(Well, I haven't coded this yet, so .... the warrior is still alive)", false);
+                  updateUserState($user, json_encode(array('state' => 'none')));
+               }
                exit();
             }
          }
