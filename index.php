@@ -94,6 +94,8 @@ if (isset($update['inline_query'])) {
       } else if ($update['text'] == '/retreat') {
          updateUserParticipation($user, false);
          sendMsg($user['id'], "From now on, your figther *will NOT* participate in the tournaments!", false);
+      } else if ($update['text'] == '/getwarrior') {
+         sendMsg($user['id'], "In progress... I haven't programmed this yet XD", false);
       } else if ($update['text'] == '/choosewarrior') {
          sendMsg($user['id'], "In progress... I haven't programmed this yet XD", false);
       } else if ($update['text'] == '/deletewarrior') {
@@ -268,6 +270,11 @@ function getAllWarriorsFromUserId($userId) {
    $stmt->bindValue(1, $userId, PDO::PARAM_INT);
    $stmt->execute();
    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function getWarriorCodeFromId($warriorId) {
+   $warrior = getWarriorById($warriorId);
+   return file_get_contents('./warriors/'.$warrior['user'].'/'.$warrior['id'].'.red');
 }
 
 function executeSimulation($warrior1ID, $warrior2ID, $rounds = 1) {
