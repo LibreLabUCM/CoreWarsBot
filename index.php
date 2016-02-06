@@ -102,7 +102,6 @@ if (isset($update['inline_query'])) {
       exit;
    }
    $user = getUserById($update['from']['id']);
-   logToFile(json_encode($update));
    if ($update['text'] == '/register' || $update['text'] == '/start register') {
       if ($user !== false) {
          sendMsg($user['id'], 'It seems you are alerady registered!', false);
