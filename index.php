@@ -48,7 +48,7 @@ if (isset($update['inline_query'])) {
    $update = $update['message'];
    
    if (!in_array($update['from']['id'], $admins)) {
-      sendMsg($update['from']['id'], "This bot is being developed.... right now!\nStarting 15:22, 06/02/2016...\nI guess.... I'll be done by 17:00\nLet's see if I can XD", false);
+      sendMsg($update['from']['id'], "This bot is being developed.... right now!\nStarting 15:22, 06/02/2016...\nI guess.... I'll be done by 18:00\nLet's see if I can XD", false);
       exit;
    }
 
@@ -289,7 +289,7 @@ function addNewWarrior($user, $warriorName, $warriorCode) {
    $warriorId = $db->lastInsertId();
    
    $wFile = fopen('./warriors/'.$user['id'].'/'. $warriorId .'.red', 'w');
-   fwrite($wFile, ";redcode-94b\n;assert 1\n;name ".$warriorName."\n;author dev\n;strategy try to win\n;date 2016-Feb-05\n;version 1\n\n".$warriorCode);
+   fwrite($wFile, ";redcode-94b\n;assert 1\n;name ".$warriorName."\n;author ".$user['username']."\n;strategy try to win\n;date 2016-Feb-05\n;version 1\n\n".$warriorCode);
    fclose($wFile);
    
    return $warriorId;
