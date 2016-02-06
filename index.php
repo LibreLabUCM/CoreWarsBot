@@ -79,7 +79,12 @@ if (isset($update['inline_query'])) {
    }
 
    $userState = json_decode($user['state'], true);
-
+   
+   if ($update['text'] == '/cancel') {
+      updateUserState($user, json_encode(array('state' => 'none')));
+      sendMsg($user['id'], "Cancelling...", false);
+      exit();
+   }
    if ($userState['state'] == 'none') {
       if ($update['text'] == '/sendwarrior') {
          updateUserState($user, json_encode(array('state' => 'sendWarrior')));
@@ -109,14 +114,14 @@ if (isset($update['inline_query'])) {
          updateUserParticipation($user, false);
          sendMsg($user['id'], "From now on, your figther *will NOT* participate in the tournaments!", false);
       } else if ($update['text'] == '/getwarrior') {
-         sendMsg($user['id'], "In progress... I haven't programmed this yet XD", false);
+         $warriorsAsKeyboard = getWarriorsFromUserAsKeyboard($user['id']);
+         array_push($warriorsAsKeyboard, array('/cancel'));
+         sendMsg($user['id'], "Choose a warrior (select one from the list or input its id)", $warriorsAsKeyboard);
+         updateUserState($user, json_encode(array('state' => 'getWarrior')));
       } else if ($update['text'] == '/choosewarrior') {
          sendMsg($user['id'], "In progress... I haven't programmed this yet XD", false);
       } else if ($update['text'] == '/deletewarrior') {
          sendMsg($user['id'], "In progress... I haven't programmed this yet XD", false);
-      } else if ($update['text'] == '/cancel') {
-         updateUserState($user, json_encode(array('state' => 'none')));
-         sendMsg($user['id'], "Cancelling...", false);
       } else if (explode(" ", $update['text'])[0] == '/sim') {
          if (!in_array($update['from']['id'], $admins)) {
             sendMsg($update['from']['id'], "You are not the boss", array(array('I am not the boss', 'I am not the boss'),array('I am not the boss', 'I am not the boss')));
@@ -164,6 +169,19 @@ if (isset($update['inline_query'])) {
                sendMsg($user['id'], "Am..... *yes* or *no* ?", array(array('yes', 'no')));
             }
          }
+      } else if ($userState['state'] == 'getWarrior') {
+         $warriorId = explode(" ", $update['text'])[0];
+         if (is_numeric($warriorId)) {
+            $warrior = getWarriorById($warriorId);
+            if (($warrior !== false) && ($warrior['user'] == $user['id'])) {
+               sendMsg($user['id'], getWarriorCodeFromId($warriorId), false);
+               updateUserState($user, json_encode(array('state' => 'none')));
+               exit();
+            }
+         }
+         $warriorsAsKeyboard = getWarriorsFromUserAsKeyboard($user['id']);
+         array_push($warriorsAsKeyboard, array('/cancel'));
+         sendMsg($user['id'], "Choose a valid warrior", $warriorsAsKeyboard);
       }
    }
 }
@@ -284,6 +302,15 @@ function getAllWarriorsFromUserId($userId) {
    $stmt->bindValue(1, $userId, PDO::PARAM_INT);
    $stmt->execute();
    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function getWarriorsFromUserAsKeyboard($userId) {
+   $warriors = getAllWarriorsFromUserId($userId);
+   $keyboard = array();
+   foreach ($warriors as $wi => $warrior) {
+      array_push($keyboard, array($warrior['id'].' - '.$warrior['name']));
+   }
+   return $keyboard;
 }
 
 function getWarriorCodeFromId($warriorId) {
