@@ -86,6 +86,20 @@ if (isset($update['inline_query'])) {
          sendMsg($user['id'], "Warrior name:", false);
       } else if ($update['text'] == '/help') {
          sendMsg($user['id'], "Once you are registered you can submit warriors with /sendwarrior\nIf you want, you can /participate or /retreat for the following tournaments.\nWhen you participate, your fighter (choose with /choosewarrior ) will fight in the core of the next tournaments.\nTournaments happen from time to time, you will be notified of the results.\nThis bot is in *alpha*!\n(No tournaments scheduled)", false);
+      } else if ($update['text'] == '/commands') {
+         sendMsg($user['id'],
+            "/register - Become a member to participate\n".
+            "/help - Do I have to explain what this is for?\n".
+            "/sendwarrior - send a new warrior\n".
+            "/getwarrior - If you want to take a look to the code of one of your warriors....\n".
+            "/score - shows your score\n".
+            "/participate - from now on, your choosen warrior will fight!\n".
+            "/retreat - from now on, you wont participate\n".
+            "/choosewarrior - choose one of your warriors for the fight!\n".
+            "/deletewarrior - delete one of your warriors\n".
+            "/cancel - cancels operation\n".
+            "/commands - get a list of all available commands\n",
+            false);
       } else if ($update['text'] == '/score') {
          sendMsg($user['id'], 'Your score is '.$user['score']);
       } else if ($update['text'] == '/participate') {
