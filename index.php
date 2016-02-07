@@ -1,5 +1,7 @@
 <?php
 ini_set('display_errors','1'); error_reporting(E_ALL);
+date_default_timezone_set('Europe/Madrid');
+
 include('config.php');
 if(!defined('TOKEN')) {
    echo "Define a token in config.php:<br>\n<br>\n";
@@ -211,10 +213,15 @@ if (isset($update['inline_query'])) {
             }
          } else if(empty($userState['warriorId'])){
             // Warrior name choosen, here is the code of the warrior!
-            $warriorId = addNewWarrior($user, $userState['warriorName'], $update['text']);
-            $userState['warriorId'] = $warriorId;
-            updateUserState($user, json_encode($userState));
-            sendMsg($user['id'], "Would you like to choose the warrior you just submitted to be your fighter? *yes* or *no* ?", array(array('yes', 'no')));
+            $testWarriorCode = testIfCodeIsValid($update['text']);
+            if ($testWarriorCode === true) {
+               $warriorId = addNewWarrior($user, $userState['warriorName'], $update['text']);
+               $userState['warriorId'] = $warriorId;
+               updateUserState($user, json_encode($userState));
+               sendMsg($user['id'], "Would you like to choose the warrior you just submitted to be your fighter? *yes* or *no* ?", array(array('yes', 'no')));
+            } else {
+               sendMsg($user['id'], "Something wrong happended with your warrior....\n```\n".$testWarriorCode."```\nPlease, send the code again, or /cancel", false);
+            }
          } else {
             if ($update['text'] == 'yes') {
                updateFighterWarrior($user, $userState['warriorId']);
@@ -446,6 +453,26 @@ function logToFile($text) {
    $wFile = fopen('./log.log', 'a');
    fwrite($wFile, $text . "\n--------------------\n");
    fclose($wFile);
+}
+
+function testIfCodeIsValid($code) {
+   $temp_file = tempnam(sys_get_temp_dir(), 'CWB');
+   $wFile = fopen($temp_file, 'w');
+   fwrite($wFile, ";redcode-94b\n;assert 1\n;name debug\n;author author\n;strategy none\n;date ".date('Y-M-d')."\n;version 1\n\n".strtolower($code));
+   fclose($wFile);
+   unset($output); unset($ret);
+   exec ('"./bin/pmars" -b -k "'.$temp_file.'" 2>&1', $output, $ret);
+   
+   //print_r($output);
+   
+   if (count($output) !== 1) {
+      unset($output[count($output) - 1]);
+      return join("\n", $output);
+   }
+   if ($ret !== 0) {
+      return join("\n", $output);
+   }
+   return true;
 }
 
 /*
