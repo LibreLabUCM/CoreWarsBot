@@ -32,7 +32,7 @@ $update = json_decode($_IN, true);
 
 if (isset($update['inline_query'])) {
    $inline_query = $update['inline_query'];
-   if (false && !in_array($inline_query['from']['id'], $admins)) { // Remove the "false && " to set maintenance mode
+   if (!in_array($inline_query['from']['id'], $admins)) { // Remove the "false && " to set maintenance mode
       $ans = array(
          'inline_query_id' => $inline_query['id'],
          'results' => json_encode(array(
